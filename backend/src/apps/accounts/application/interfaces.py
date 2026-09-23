@@ -1,5 +1,6 @@
 from typing import Protocol
 
+from apps.accounts.application.dto import CreateAccountDTO
 from apps.accounts.models import Account, AccountInfo
 
 class AccountRepository(Protocol):
@@ -20,7 +21,14 @@ class AccountRepository(Protocol):
         is_active: bool | None = None,
     ) -> None:
         ...
-        
+    
+    def create_account(
+        self,
+        username: str,
+        data: CreateAccountDTO,
+    ) -> AccountInfo:
+        ...    
+                
 class TokenProvider(Protocol):
     def generate_tokens(
         self,

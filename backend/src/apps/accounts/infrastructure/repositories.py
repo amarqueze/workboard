@@ -1,3 +1,4 @@
+from apps.accounts.application.dto import CreateAccountDTO
 from apps.accounts.models import Account, AccountInfo
 
 class DjangoAccountRepository:
@@ -45,3 +46,24 @@ class DjangoAccountRepository:
             update_fields.append("is_active")
 
         account.save(update_fields=update_fields)
+        
+    def create_account(
+        self,
+        newUsername: str,
+        data: CreateAccountDTO,
+    ) -> AccountInfo:
+        account = Account(
+            username=newUsername,
+        )
+        account.set_password(data.password)
+        account.save()
+
+        account_info = AccountInfo.objects.create(
+            account=account,
+            email=data.email,
+            name=data.name,
+            last_name=data.last_name,
+            role=data.role,
+        )
+
+        return account_info

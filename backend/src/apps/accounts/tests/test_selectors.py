@@ -8,7 +8,7 @@ from apps.accounts.models import Account, AccountInfo
 pytestmark = pytest.mark.django_db
 
 
-def test_get_user_info_by_email_returns_account_info() -> None:
+def test_get_user_info_by_email_returns_user_info_dictionary() -> None:
     account = Account.objects.create_user(
         username="ada",
         password="TestPass123!",
@@ -26,7 +26,13 @@ def test_get_user_info_by_email_returns_account_info() -> None:
         repository=DjangoAccountRepository(),
     )
 
-    assert result == account_info
+    assert result == {
+        "account_id": account_info.id,
+        "email": "ada@example.com",
+        "name": "Ada",
+        "last_name": "Lovelace",
+        "role": "member",
+    }
 
 
 def test_get_user_info_by_email_raises_when_user_info_does_not_exist() -> None:
