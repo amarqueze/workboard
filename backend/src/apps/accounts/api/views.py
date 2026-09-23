@@ -6,7 +6,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from apps.accounts.application.dto import CreateAccountDTO, LoginDTO
-from apps.accounts.application.selectors import get_user_info_by_email
+from apps.accounts.application.selectors import (
+    get_user_info_by_email,
+    list_users,
+)
 from apps.accounts.application.services import create_account, login
 from apps.accounts.infrastructure.repositories import DjangoAccountRepository
 from apps.accounts.infrastructure.token_provider import SimpleJWTTokenProvider
@@ -22,6 +25,7 @@ from .serializers import (
     UserInfoByEmailRequestSerializer,
     UserInfoResponseEnvelopeSerializer,
     UserInfoResponseSerializer,
+    UserListResponseEnvelopeSerializer,
 )
 
 
@@ -150,4 +154,25 @@ class AccountViewSet(ViewSet):
                 "data": response_serializer.data,
             },
             status=status.HTTP_201_CREATED,
-        )    
+        )
+    
+    @extend_schema(
+        tags=["Accounts"],
+        summary="List users",
+        responses={
+            200: UserListResponseEnvelopeSerializer,
+        },
+    )
+    def list(self, request):
+        result = list_users(
+            repository=DjangoAccountRepository(),
+        )
+
+        response_serializer = UserInfoResponseSerializer(result, many=True)
+
+        return Response(
+            {
+                "data": response_serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )        

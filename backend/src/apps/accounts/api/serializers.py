@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 
 
@@ -27,6 +28,10 @@ class UserInfoResponseSerializer(serializers.Serializer):
 
 class UserInfoResponseEnvelopeSerializer(serializers.Serializer):
     data = UserInfoResponseSerializer()
+
+@extend_schema_serializer(many=False)
+class UserListResponseEnvelopeSerializer(serializers.Serializer):
+    data = UserInfoResponseSerializer(many=True)
 
 class CreateAccountRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()

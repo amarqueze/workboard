@@ -43,6 +43,9 @@ class MockAccountRepository:
         self.updated_login_attempts: list[tuple[Account, int, bool | None]] = []
         self.next_account_info_id = 1
 
+    def list_account_info(self) -> list[AccountInfo]:
+        return list(self.account_info_by_email.values())
+
     def find_account_info_by_email(self, email: str) -> AccountInfo | None:
         return self.account_info_by_email.get(email)
 

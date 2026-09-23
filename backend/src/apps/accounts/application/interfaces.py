@@ -3,7 +3,11 @@ from typing import Protocol
 from apps.accounts.application.dto import CreateAccountDTO
 from apps.accounts.models import Account, AccountInfo
 
+
 class AccountRepository(Protocol):
+    def list_account_info(self) -> list[AccountInfo]:
+        ...
+
     def find_account_info_by_email(self, email: str) -> AccountInfo | None:
         ...
 

@@ -1,7 +1,13 @@
 from apps.accounts.application.dto import CreateAccountDTO
 from apps.accounts.models import Account, AccountInfo
 
+
 class DjangoAccountRepository:
+    def list_account_info(self) -> list[AccountInfo]:
+        return list(
+            AccountInfo.objects.select_related("account").order_by("id")
+        )
+
     def find_account_info_by_email(
         self,
         email: str,
