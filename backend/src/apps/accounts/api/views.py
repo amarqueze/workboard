@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-
+from rest_framework.permissions import AllowAny
 from apps.accounts.application.dto import CreateAccountDTO, LoginDTO
 from apps.accounts.application.selectors import get_user_info_by_email
 from apps.accounts.application.services import create_account, login
@@ -20,7 +20,7 @@ from .serializers import (
 
 
 class AccountViewSet(ViewSet):
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=["post"], permission_classes=[AllowAny])
     def login(self, request):
         request_serializer = LoginRequestSerializer(data=request.data)
         request_serializer.is_valid(raise_exception=True)
