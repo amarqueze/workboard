@@ -1,8 +1,10 @@
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from rest_framework.permissions import AllowAny
+
 from apps.accounts.application.dto import CreateAccountDTO, LoginDTO
 from apps.accounts.application.selectors import get_user_info_by_email
 from apps.accounts.application.services import create_account, login
@@ -10,16 +12,37 @@ from apps.accounts.infrastructure.repositories import DjangoAccountRepository
 from apps.accounts.infrastructure.token_provider import SimpleJWTTokenProvider
 
 from .serializers import (
-    LoginRequestSerializer,
-    LoginResponseSerializer,
-    UserInfoByEmailRequestSerializer,
-    UserInfoResponseSerializer,
+    AccountCreatedResponseEnvelopeSerializer,
     AccountCreatedResponseSerializer,
     CreateAccountRequestSerializer,
+    ErrorResponseSerializer,
+    LoginRequestSerializer,
+    LoginResponseEnvelopeSerializer,
+    LoginResponseSerializer,
+    UserInfoByEmailRequestSerializer,
+    UserInfoResponseEnvelopeSerializer,
+    UserInfoResponseSerializer,
 )
 
 
 class AccountViewSet(ViewSet):
+    @extend_schema(
+        tags=["Accounts"],
+        summary="Log in",
+        auth=[],
+        request=LoginRequestSerializer,
+        responses={
+            200: LoginResponseEnvelopeSerializer,
+            401: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Invalid email or password.",
+            ),
+            403: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="The account is disabled.",
+            ),
+        },
+    )
     @action(detail=False, methods=["post"], permission_classes=[AllowAny])
     def login(self, request):
         request_serializer = LoginRequestSerializer(data=request.data)
@@ -47,7 +70,23 @@ class AccountViewSet(ViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(detail=False, methods=["get"], url_path="user-info")
+    @extend_schema(
+        tags=["Accounts"],
+        summary="Get user info by email",
+        parameters=[UserInfoByEmailRequestSerializer],
+        responses={
+            200: UserInfoResponseEnvelopeSerializer,
+            404: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="User was not found.",
+            ),
+        },
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="user-info",
+    )
     def user_info(self, request):
         request_serializer = UserInfoByEmailRequestSerializer(
             data=request.query_params,
@@ -70,6 +109,18 @@ class AccountViewSet(ViewSet):
             status=status.HTTP_200_OK,
         )
         
+    @extend_schema(
+        tags=["Accounts"],
+        summary="Register account",
+        request=CreateAccountRequestSerializer,
+        responses={
+            201: AccountCreatedResponseEnvelopeSerializer,
+            400: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="An account with this email already exists.",
+            ),
+        },
+    )
     @action(detail=False, methods=["post"])
     def register(self, request):
         request_serializer = CreateAccountRequestSerializer(

@@ -12,6 +12,9 @@ class LoginResponseSerializer(serializers.Serializer):
     access_token = serializers.CharField()
     refresh_token = serializers.CharField()
 
+class LoginResponseEnvelopeSerializer(serializers.Serializer):
+    data = LoginResponseSerializer()
+
 class UserInfoByEmailRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
@@ -21,6 +24,9 @@ class UserInfoResponseSerializer(serializers.Serializer):
     name = serializers.CharField()
     last_name = serializers.CharField()
     role = serializers.CharField()
+
+class UserInfoResponseEnvelopeSerializer(serializers.Serializer):
+    data = UserInfoResponseSerializer()
 
 class CreateAccountRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -39,3 +45,13 @@ class AccountCreatedResponseSerializer(serializers.Serializer):
     name = serializers.CharField()
     last_name = serializers.CharField()
     role = serializers.CharField()
+
+class AccountCreatedResponseEnvelopeSerializer(serializers.Serializer):
+    data = AccountCreatedResponseSerializer()
+
+class ErrorDetailSerializer(serializers.Serializer):
+    code = serializers.CharField()
+    message = serializers.CharField()
+
+class ErrorResponseSerializer(serializers.Serializer):
+    error = ErrorDetailSerializer()
