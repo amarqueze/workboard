@@ -1,0 +1,50 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Django: Check",
+            "type": "process",
+            "command": "uv",
+            "args": [
+                "run",
+                "python",
+                "manage.py",
+                "check"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Django: Make Migrations",
+            "type": "process",
+            "command": "uv",
+            "args": [
+                "run",
+                "python",
+                "manage.py",
+                "makemigrations"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Django: Migrate",
+            "type": "process",
+            "command": "uv",
+            "args": [
+                "run",
+                "python",
+                "manage.py",
+                "migrate"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
