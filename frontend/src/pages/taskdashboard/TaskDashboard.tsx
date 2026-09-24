@@ -212,6 +212,7 @@ function TaskDashboard() {
 
       content: (
         <NewTaskModal
+          createdById={account!.account_id}
           onClose={closeModal}
           onCreate={() => {
             successModal();
@@ -223,10 +224,11 @@ function TaskDashboard() {
         void refetch();
 
         showToast({
-          title: "Task created",
+          title: "Task Pending to be created",
           message:
             "The task was created successfully.",
-          type: "success",
+          type: "info",
+          duration: 5000,
         });
       },
     });

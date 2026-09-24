@@ -1,43 +1,99 @@
-import {
-  type FormEvent,
-  useState,
-} from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import "./NewTaskModal.css";
 
-export type NewTaskModalValues = {
-  name: string;
-  description: string;
-  due_date: string;
-};
+import { useCreateTask } from "../../hooks/use-create-task";
+import { useToast } from "../toast/useToast";
+
+const newTaskSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required")
+    .max(150, "Name is too long"),
+
+  description: z
+    .string()
+    .trim()
+    .min(1, "Description is required"),
+
+  due_date: z
+    .string()
+    .min(1, "Due date is required"),
+});
+
+type NewTaskFormValues = z.infer<typeof newTaskSchema>;
 
 type NewTaskModalProps = {
+  createdById: number;
+  onCreate: () => void;
   onClose: () => void;
-  onCreate: (values: NewTaskModalValues) => void;
 };
 
+function formatDueDateForApi(value: string) {
+  return `${value}T18:00:00Z`;
+}
+
 function NewTaskModal({
-  onClose,
+  createdById,
   onCreate,
+  onClose,
 }: NewTaskModalProps) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const {
+    mutateAsync: createTask,
+    isPending: isCreatingTask,
+  } = useCreateTask();
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<NewTaskFormValues>({
+    resolver: zodResolver(newTaskSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      due_date: "",
+    },
+  });
 
-    onCreate({
-      name,
-      description,
-      due_date: dueDate,
-    });
-  }
+  const { showToast } = useToast();
+
+  const onSubmit = async (
+    values: NewTaskFormValues,
+  ) => {
+    try {
+      await createTask({
+        name: values.name,
+        description: values.description,
+        due_date: formatDueDateForApi(
+          values.due_date,
+        ),
+        created_by_id: createdById,
+        state: "OPEN",
+      });
+
+      onCreate();
+    } catch (error) {
+      console.error(
+        "Error creating task:",
+        error,
+      );
+      showToast({
+        title: "Error creating task",
+        message: "An error occurred while creating the task.",
+        type: "error",
+        duration: 5000
+      });
+    }
+  };
 
   return (
     <form
       className="new-task-modal"
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
     >
       <header className="new-task-modal__header">
         <h2 className="new-task-modal__title">
@@ -67,12 +123,14 @@ function NewTaskModal({
             id="new-task-name"
             className="input"
             type="text"
-            value={name}
-            required
-            onChange={(event) => {
-              setName(event.target.value);
-            }}
+            {...register("name")}
           />
+
+          {errors.name && (
+            <span className="field__error">
+              {errors.name.message}
+            </span>
+          )}
         </div>
 
         <div className="field">
@@ -86,12 +144,14 @@ function NewTaskModal({
           <textarea
             id="new-task-description"
             className="textarea new-task-modal__description"
-            value={description}
-            required
-            onChange={(event) => {
-              setDescription(event.target.value);
-            }}
+            {...register("description")}
           />
+
+          {errors.description && (
+            <span className="field__error">
+              {errors.description.message}
+            </span>
+          )}
         </div>
 
         <div className="field">
@@ -106,12 +166,14 @@ function NewTaskModal({
             id="new-task-due-date"
             className="input"
             type="date"
-            value={dueDate}
-            required
-            onChange={(event) => {
-              setDueDate(event.target.value);
-            }}
+            {...register("due_date")}
           />
+
+          {errors.due_date && (
+            <span className="field__error">
+              {errors.due_date.message}
+            </span>
+          )}
         </div>
       </div>
 
@@ -119,8 +181,11 @@ function NewTaskModal({
         <button
           type="submit"
           className="button button--primary"
+          disabled={isCreatingTask}
         >
-          Create
+          {isCreatingTask
+            ? "Creating..."
+            : "Create"}
         </button>
       </footer>
     </form>
