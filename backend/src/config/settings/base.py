@@ -13,9 +13,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 
-
 BASE_DIR = Path(__file__).resolve().parents[3]
-
 
 SECRET_KEY = "django-insecure-mtbi7bkcb=zy4+&la1z((3-knfa)ft*#%!&-v7dy9_q5(m3^-5"
 
@@ -36,6 +34,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     
     "apps.accounts.apps.AccountsConfig",
+    "apps.taskmanager.apps.TaskmanagerConfig",
 ]
 
 

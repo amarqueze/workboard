@@ -25,6 +25,10 @@ urlpatterns = [
         "api/",
         include("apps.accounts.api.urls"),
     ),
+    path(
+        "api/",
+        include("apps.taskmanager.api.urls"),
+    ),
     
     path(
         "api/schema/",

@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
 
 from apps.accounts.api.exception_handler import handle_account_exception
+from apps.taskmanager.api.exception_handler import handle_taskmanager_exception
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,11 @@ def api_exception_handler(exc: Exception, context: dict) -> Response:
 
     if account_response is not None:
         return account_response
+
+    taskmanager_response = handle_taskmanager_exception(exc)
+
+    if taskmanager_response is not None:
+        return taskmanager_response
 
     drf_response = drf_exception_handler(exc, context)
 
