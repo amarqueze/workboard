@@ -8,6 +8,7 @@ import LoginPage from "../pages/login/LoginPage";
 import HomePage from "../pages/home/HomePage";
 import TaskDashboard from "../pages/taskdashboard/TaskDashboard";
 import { appRoutes } from "./appRoutes";
+import ProtectedRoute from "./ProtectedRoute";
 
 export function AppRouter() {
   return (
@@ -18,24 +19,28 @@ export function AppRouter() {
       />
 
       <Route
-        path="/"
-        element={
-          <Navigate
-            to={appRoutes.home}
-            replace
-          />
-        }
-      />
+        element={<ProtectedRoute />}
+      >
+        <Route
+          path="/"
+          element={
+            <Navigate
+              to={appRoutes.home}
+              replace
+            />
+          }
+        />
 
-      <Route
-        path={appRoutes.home}
-        element={<HomePage />}
-      />
+        <Route
+          path={appRoutes.home}
+          element={<HomePage />}
+        />
 
-      <Route
-        path={appRoutes.taskDashboard}
-        element={<TaskDashboard />}
-      />
+        <Route
+          path={appRoutes.taskDashboard}
+          element={<TaskDashboard />}
+        />
+      </Route>
 
       <Route
         path="*"
