@@ -20,6 +20,13 @@ http://127.0.0.1:8080
 
 The frontend is exposed on local port `8080`. The Django backend runs inside Docker and is reached by the frontend through the `/api/` Nginx proxy.
 
+## Login Credentials
+
+```text
+Email: cid@workboard.local
+Password: Cid123!
+```
+
 ## Technologies Used
 
 | Area | Technologies |
@@ -183,13 +190,6 @@ By default, the frontend API client points to:
 http://127.0.0.1:8000/api
 ```
 
-## Login Credentials
-
-```text
-Email: cid@workboard.local
-Password: Cid123!
-```
-
 ## Swagger / API Documentation
 
 When running the backend manually:
@@ -215,8 +215,6 @@ A Postman collection is available in the project root:
 Import it into Postman to test the API endpoints directly.
 
 ## Screenshots
-
-Application screenshots are stored in the root-level [`screen/`](./screen) directory.
 
 ![Login](./screen/login.png)
 
