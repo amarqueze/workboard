@@ -10,6 +10,9 @@ RUN uv sync --frozen --no-dev
 
 COPY manage.py ./
 COPY src ./src
+COPY start.sh ./
+
+RUN chmod +x /app/start.sh
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -18,4 +21,4 @@ ENV PYTHONPATH=/app/src
 
 EXPOSE 8000
 
-CMD ["uv", "run", "gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
+CMD ["/app/start.sh"]
