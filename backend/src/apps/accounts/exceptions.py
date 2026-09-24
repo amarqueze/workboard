@@ -19,7 +19,13 @@ class AccountDisabledError(AccountError):
 class UserInfoNotFoundError(AccountError):
     code = "USER_NOT_FOUND"
     message = "User was not found."
+
+
+class AccountNotFoundError(AccountError):
+    code = "ACCOUNT_NOT_FOUND"
+    message = "Account was not found."
     
+
 class AccountAlreadyExistsError(AccountError):
     code = "ACCOUNT_ALREADY_EXISTS"
     message = "An account with this email already exists."    

@@ -19,6 +19,17 @@ class DjangoAccountRepository:
         except AccountInfo.DoesNotExist:
             return None
 
+    def find_account_info_by_id(
+        self,
+        account_info_id: int,
+    ) -> AccountInfo | None:
+        try:
+            return AccountInfo.objects.select_related("account").get(
+                id=account_info_id,
+            )
+        except AccountInfo.DoesNotExist:
+            return None
+
     def find_account_by_email(
         self,
         email: str,

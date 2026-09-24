@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from apps.accounts.exceptions import (
     AccountAlreadyExistsError,
     AccountDisabledError,
+    AccountNotFoundError,
     InvalidCredentialsError,
     UserInfoNotFoundError,
 )
@@ -33,6 +34,17 @@ def handle_account_exception(exc: Exception) -> Response | None:
         )
 
     if isinstance(exc, UserInfoNotFoundError):
+        return Response(
+            {
+                "error": {
+                    "code": exc.code,
+                    "message": exc.message,
+                }
+            },
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if isinstance(exc, AccountNotFoundError):
         return Response(
             {
                 "error": {

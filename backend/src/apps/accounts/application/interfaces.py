@@ -11,6 +11,12 @@ class AccountRepository(Protocol):
     def find_account_info_by_email(self, email: str) -> AccountInfo | None:
         ...
 
+    def find_account_info_by_id(
+        self,
+        account_info_id: int,
+    ) -> AccountInfo | None:
+        ...
+
     def find_account_by_email(self, email: str) -> Account | None:
         ...
 
