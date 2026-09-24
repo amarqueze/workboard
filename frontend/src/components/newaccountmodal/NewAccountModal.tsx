@@ -1,60 +1,107 @@
-import {
-  type FormEvent,
-  useState,
-} from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { useRegisterAccount } from "../../hooks/use-register-account";
 
 import "./NewAccountModal.css";
 
-export type NewAccountModalValues = {
-  email: string;
-  password: string;
-  name: string;
-  last_name: string;
-  role: string;
-};
+const newAccountSchema = z
+  .object({
+    email: z
+      .string()
+      .min(1, "Email is required.")
+      .email("Enter a valid email address."),
+
+    name: z
+      .string()
+      .min(1, "Name is required."),
+
+    last_name: z
+      .string()
+      .min(1, "Last name is required."),
+
+    role: z
+      .string()
+      .min(1, "Role is required."),
+
+    password: z
+      .string()
+      .min(
+        8,
+        "Password must contain at least 8 characters.",
+      ),
+
+    confirmPassword: z
+      .string()
+      .min(1, "Confirm your password."),
+  })
+  .refine(
+    (data) =>
+      data.password === data.confirmPassword,
+    {
+      message: "Passwords do not match.",
+      path: ["confirmPassword"],
+    },
+  );
+
+type NewAccountFormData =
+  z.infer<typeof newAccountSchema>;
 
 type NewAccountModalProps = {
   onClose: () => void;
-  onCreate: (values: NewAccountModalValues) => void;
+  onCreate: () => void;
 };
 
 function NewAccountModal({
   onClose,
   onCreate,
 }: NewAccountModalProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
-  const [name, setName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [role, setRole] = useState("");
-  const [passwordError, setPasswordError] =
-    useState("");
+  const {
+    mutateAsync: registerAccount,
+    isPending,
+  } = useRegisterAccount();
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: {
+      errors,
+    },
+  } = useForm<NewAccountFormData>({
+    resolver: zodResolver(newAccountSchema),
 
-    if (password !== confirmPassword) {
-      setPasswordError("Passwords do not match.");
-      return;
-    }
+    defaultValues: {
+      email: "",
+      name: "",
+      last_name: "",
+      role: "member",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-    setPasswordError("");
 
-    onCreate({
-      email,
-      password,
-      name,
-      last_name: lastName,
-      role,
+  async function onSubmit(
+    data: NewAccountFormData,
+  ) {
+    await registerAccount({
+      email: data.email,
+      password: data.password,
+      name: data.name,
+      last_name: data.last_name,
+      role: data.role,
     });
+
+    onCreate();
   }
+
 
   return (
     <form
       className="new-account-modal"
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
     >
       <header className="new-account-modal__header">
         <h2 className="new-account-modal__title">
@@ -67,7 +114,7 @@ function NewAccountModal({
           aria-label="Close new account"
           onClick={onClose}
         >
-          x
+          ×
         </button>
       </header>
 
@@ -82,14 +129,21 @@ function NewAccountModal({
 
           <input
             id="new-account-email"
-            className="input"
+            className={
+              errors.email
+                ? "input input--invalid"
+                : "input"
+            }
             type="email"
-            value={email}
-            required
-            onChange={(event) => {
-              setEmail(event.target.value);
-            }}
+            autoComplete="email"
+            {...register("email")}
           />
+
+          {errors.email && (
+            <p className="field__error">
+              {errors.email.message}
+            </p>
+          )}
         </div>
 
         <div className="new-account-modal__field-grid">
@@ -103,14 +157,20 @@ function NewAccountModal({
 
             <input
               id="new-account-name"
-              className="input"
+              className={
+                errors.name
+                  ? "input input--invalid"
+                  : "input"
+              }
               type="text"
-              value={name}
-              required
-              onChange={(event) => {
-                setName(event.target.value);
-              }}
+              {...register("name")}
             />
+
+            {errors.name && (
+              <p className="field__error">
+                {errors.name.message}
+              </p>
+            )}
           </div>
 
           <div className="field">
@@ -123,14 +183,20 @@ function NewAccountModal({
 
             <input
               id="new-account-last-name"
-              className="input"
+              className={
+                errors.last_name
+                  ? "input input--invalid"
+                  : "input"
+              }
               type="text"
-              value={lastName}
-              required
-              onChange={(event) => {
-                setLastName(event.target.value);
-              }}
+              {...register("last_name")}
             />
+
+            {errors.last_name && (
+              <p className="field__error">
+                {errors.last_name.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -144,14 +210,20 @@ function NewAccountModal({
 
           <input
             id="new-account-role"
-            className="input"
+            className={
+              errors.role
+                ? "input input--invalid"
+                : "input"
+            }
             type="text"
-            value={role}
-            required
-            onChange={(event) => {
-              setRole(event.target.value);
-            }}
+            {...register("role")}
           />
+
+          {errors.role && (
+            <p className="field__error">
+              {errors.role.message}
+            </p>
+          )}
         </div>
 
         <div className="new-account-modal__field-grid">
@@ -166,18 +238,20 @@ function NewAccountModal({
             <input
               id="new-account-password"
               className={
-                passwordError === ""
-                  ? "input"
-                  : "input input--invalid"
+                errors.password
+                  ? "input input--invalid"
+                  : "input"
               }
               type="password"
-              value={password}
-              required
-              onChange={(event) => {
-                setPassword(event.target.value);
-                setPasswordError("");
-              }}
+              autoComplete="new-password"
+              {...register("password")}
             />
+
+            {errors.password && (
+              <p className="field__error">
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
           <div className="field">
@@ -191,42 +265,42 @@ function NewAccountModal({
             <input
               id="new-account-confirm-password"
               className={
-                passwordError === ""
-                  ? "input"
-                  : "input input--invalid"
+                errors.confirmPassword
+                  ? "input input--invalid"
+                  : "input"
               }
               type="password"
-              value={confirmPassword}
-              required
-              aria-describedby={
-                passwordError === ""
-                  ? undefined
-                  : "new-account-password-error"
-              }
-              onChange={(event) => {
-                setConfirmPassword(event.target.value);
-                setPasswordError("");
-              }}
+              autoComplete="new-password"
+              {...register("confirmPassword")}
             />
+
+            {errors.confirmPassword && (
+              <p className="field__error">
+                {errors.confirmPassword.message}
+              </p>
+            )}
           </div>
         </div>
-
-        {passwordError !== "" && (
-          <p
-            id="new-account-password-error"
-            className="field__error"
-          >
-            {passwordError}
-          </p>
-        )}
       </div>
 
       <footer className="new-account-modal__footer">
         <button
+          type="button"
+          className="button"
+          onClick={onClose}
+          disabled={isPending}
+        >
+          Cancel
+        </button>
+
+        <button
           type="submit"
           className="button button--primary"
+          disabled={isPending}
         >
-          Create
+          {isPending
+            ? "Creating..."
+            : "Create"}
         </button>
       </footer>
     </form>
