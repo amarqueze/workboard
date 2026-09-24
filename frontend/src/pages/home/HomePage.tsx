@@ -3,8 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useModal } from "../../components/modal/useModal";
 import NewAccountModal from "../../components/newaccountmodal/NewAccountModal";
 import { useToast } from "../../components/toast/useToast";
+import { useAccounts } from "../../hooks/use-accounts";
+import { useAuth } from "../../hooks/use-auth";
 import { appRoutes } from "../../routes/appRoutes";
+
 import "./HomePage.css";
+
 
 function LogoutIcon() {
   return (
@@ -16,14 +20,26 @@ function LogoutIcon() {
   );
 }
 
+
 function HomePage() {
   const navigate = useNavigate();
+
   const {
     closeModal,
     openModal,
     successModal,
   } = useModal();
+
+  const { data, logout } = useAuth();
+
   const { showToast } = useToast();
+
+  const {
+    data: accounts,
+    isLoading: isLoadingAccounts,
+    isError: isAccountsError,
+  } = useAccounts();
+
 
   function handleNewAccount() {
     openModal({
@@ -40,29 +56,37 @@ function HomePage() {
       onSuccess: () => {
         showToast({
           title: "Account created",
-          message: "The account was created successfully.",
+          message:
+            "The account was created successfully.",
           type: "success",
         });
       },
     });
   }
 
+
   function handleOpenDashboard() {
     navigate(appRoutes.taskDashboard);
   }
 
+
   function handleLogout() {
+    logout();
+
     navigate(appRoutes.login, {
       replace: true,
     });
   }
+
 
   return (
     <main className="home-page">
       <section className="home-shell">
         <header className="home-header">
           <div className="home-header__left">
-            <div className="home-logo">WB</div>
+            <div className="home-logo">
+              WB
+            </div>
 
             <button
               type="button"
@@ -75,11 +99,12 @@ function HomePage() {
 
           <div className="home-user">
             <div className="home-user__avatar">
-              RD
+              {data?.name?.charAt(0) ?? ""}
+              {data?.last_name?.charAt(0) ?? ""}
             </div>
 
             <span className="home-user__name">
-              Rodrigo Diaz de Vivar
+              {data?.name} {data?.last_name}
             </span>
 
             <button
@@ -95,7 +120,7 @@ function HomePage() {
 
         <div className="home-content">
           <h1 className="home-title">
-            Welcome to WorkBoard
+            Welcome to WorkBoard, {data?.name}!
           </h1>
 
           <button
@@ -111,10 +136,59 @@ function HomePage() {
               Organize your tasks here
             </span>
           </button>
+
+          <section className="home-users">
+            <h2 className="home-users__title">
+              List of users
+            </h2>
+
+            {isLoadingAccounts && (
+              <p className="home-users__status">
+                Loading users...
+              </p>
+            )}
+
+            {isAccountsError && (
+              <p className="home-users__status">
+                Unable to load users.
+              </p>
+            )}
+
+            {!isLoadingAccounts &&
+              !isAccountsError &&
+              accounts && (
+                <div className="home-users__table-wrapper">
+                  <table className="home-users__table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {accounts.map((account) => (
+                        <tr key={account.account_id}>
+                          <td>
+                            {account.name} {account.last_name}
+                          </td>
+
+                          <td>{account.email}</td>
+
+                          <td>{account.role}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+          </section>
         </div>
       </section>
     </main>
   );
 }
+
 
 export default HomePage;
