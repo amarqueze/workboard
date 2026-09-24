@@ -73,19 +73,28 @@ class TaskResponseSerializer(serializers.Serializer):
     state = serializers.CharField(source="state.name")
 
     def get_created_by(self, obj):
-        return f"{obj.created_by.name} {obj.created_by.last_name}"
+        return {
+            "id": obj.created_by.id,
+            "name": f"{obj.created_by.name} {obj.created_by.last_name}"
+        }
 
     def get_updated_by(self, obj):
         if obj.updated_by is None:
             return None
 
-        return f"{obj.updated_by.name} {obj.updated_by.last_name}"
+        return {
+            "id": obj.updated_by.id,
+            "name": f"{obj.updated_by.name} {obj.updated_by.last_name}"
+        }
 
     def get_assigned_to(self, obj):
         if obj.assigned_to is None:
             return None
 
-        return f"{obj.assigned_to.name} {obj.assigned_to.last_name}"
+        return {
+            "id": obj.assigned_to.id,
+            "name": f"{obj.assigned_to.name} {obj.assigned_to.last_name}"
+        }
 
 
 class TaskResponseEnvelopeSerializer(serializers.Serializer):
