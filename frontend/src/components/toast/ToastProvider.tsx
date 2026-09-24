@@ -12,7 +12,7 @@ import type {
   Toast as ToastModel,
 } from "./toast.types";
 
-import "./toast.css";
+import "./Toast.css";
 
 
 type ToastProviderProps = {

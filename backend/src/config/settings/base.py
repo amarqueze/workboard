@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from datetime import timedelta
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parents[3]
@@ -19,7 +20,11 @@ SECRET_KEY = "django-insecure-mtbi7bkcb=zy4+&la1z((3-knfa)ft*#%!&-v7dy9_q5(m3^-5
 
 DEBUG = False
 
-ALLOWED_HOSTS: list[str] = []
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
+    if host.strip()
+]
 
 
 INSTALLED_APPS = [

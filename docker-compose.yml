@@ -1,0 +1,19 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend,frontend
+      DJANGO_SETTINGS_MODULE: config.settings.production
+    expose:
+      - "8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: /api
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
