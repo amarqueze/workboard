@@ -151,11 +151,21 @@
     {
       "name": "Create Account",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{json_web_token_0eqs}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n  \"email\": \"alfonso@workboard.local\",\r\n  \"password\": \"Alfonso123!\",\r\n  \"name\": \"Alfonso\",\r\n  \"last_name\": \"VI\",\r\n  \"role\": \"member\"\r\n}",
+          "raw": "{\r\n  \"email\": \"catalina@workboard.local\",\r\n  \"password\": \"catalina123!\",\r\n  \"name\": \"Catalina\",\r\n  \"last_name\": \"Queen\",\r\n  \"role\": \"member\"\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -250,7 +260,7 @@
           }
         },
         "url": {
-          "raw": "http://127.0.0.1:8000/api/tasks/1/state/",
+          "raw": "http://127.0.0.1:8000/api/tasks/2/state/",
           "protocol": "http",
           "host": [
             "127",
@@ -262,7 +272,7 @@
           "path": [
             "api",
             "tasks",
-            "1",
+            "2",
             "state",
             ""
           ]
@@ -271,7 +281,7 @@
       "response": []
     },
     {
-      "name": "Update task",
+      "name": "Delete task",
       "request": {
         "auth": {
           "type": "bearer",
@@ -306,7 +316,7 @@
       "response": []
     },
     {
-      "name": "Update task Copy",
+      "name": "Update task",
       "request": {
         "auth": {
           "type": "bearer",
@@ -374,7 +384,7 @@
           }
         },
         "url": {
-          "raw": "http://127.0.0.1:8000/api/tasks/1/assign/",
+          "raw": "http://127.0.0.1:8000/api/tasks/2/assign/",
           "protocol": "http",
           "host": [
             "127",
@@ -386,7 +396,7 @@
           "path": [
             "api",
             "tasks",
-            "1",
+            "2",
             "assign",
             ""
           ]
@@ -446,6 +456,10 @@
     },
     {
       "key": "json_web_token_04cc",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0eqs",
       "secret": true
     }
   ]
