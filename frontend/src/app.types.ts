@@ -95,6 +95,11 @@ export type ListTasksRequest = {
   page_size?: number;
 };
 
+export type TaskUser = {
+  id: number;
+  name: string;
+};
+
 export type TaskItem = {
   id: number;
   name: string;
@@ -102,9 +107,11 @@ export type TaskItem = {
   due_date: string;
   created_at: string;
   updated_at: string;
-  created_by: string;
-  updated_by: string;
-  assigned_to: string | null;
+
+  created_by: TaskUser;
+  updated_by: TaskUser | null;
+  assigned_to: TaskUser | null;
+
   state: string;
 };
 

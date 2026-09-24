@@ -8,60 +8,18 @@ import { useModal } from "../../components/modal/useModal";
 import NewTaskModal from "../../components/newtaskmodal/NewTaskModal";
 import TaskDetailModal from "../../components/taskdetailmodal/TaskDetailModal";
 import { useToast } from "../../components/toast/useToast";
+import { useAuth } from "../../hooks/use-auth";
+import { useTasks } from "../../hooks/use-tasks";
 import { appRoutes } from "../../routes/appRoutes";
+
+import { useAccounts } from "../../hooks/use-accounts";
+import { useAssignTask } from "../../hooks/use-assign-task";
+import { useTaskStates } from "../../hooks/use-task-states";
+import { useUpdateTaskState } from "../../hooks/use-update-task-state";
+
 import "./TaskDashboard.css";
 
-type Task = {
-  id: number;
-  name: string;
-  description: string;
-  state: string;
-  assigned_to: string | null;
-  created_by: string;
-  updated_by: string;
-  created_at: string;
-  updated_at: string;
-  due_date: string;
-};
-
-const mockTasks: Task[] = [
-  {
-    id: 1,
-    name: "Review quarterly report",
-    description: "Review financial results and disclosure notes.",
-    state: "OPEN",
-    assigned_to: "Rodrigo Diaz",
-    created_by: "Rodrigo Diaz de Vivar",
-    updated_by: "Rodrigo Diaz de Vivar",
-    created_at: "2026-09-20T14:30:00Z",
-    updated_at: "2026-09-21T16:20:00Z",
-    due_date: "2026-10-10T00:00:00Z",
-  },
-  {
-    id: 2,
-    name: "Prepare revenue disclosure",
-    description: "Prepare revenue disclosure information.",
-    state: "PROGRESS",
-    assigned_to: null,
-    created_by: "Rodrigo Diaz de Vivar",
-    updated_by: "Alfonso VI",
-    created_at: "2026-09-21T09:15:00Z",
-    updated_at: "2026-09-22T10:40:00Z",
-    due_date: "2026-10-15T00:00:00Z",
-  },
-  {
-    id: 3,
-    name: "Validate cash flow disclosure",
-    description: "Validate cash flow disclosure balances.",
-    state: "REVIEW",
-    assigned_to: "Alfonso VI",
-    created_by: "Rodrigo Diaz de Vivar",
-    updated_by: "Alfonso VI",
-    created_at: "2026-09-22T11:45:00Z",
-    updated_at: "2026-09-23T08:10:00Z",
-    due_date: "2026-10-20T00:00:00Z",
-  },
-];
+const PAGE_SIZE = 10;
 
 function TrashIcon() {
   return (
@@ -75,6 +33,7 @@ function TrashIcon() {
   );
 }
 
+
 function LogoutIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -85,91 +44,200 @@ function LogoutIcon() {
   );
 }
 
+
 function TaskDashboard() {
   const navigate = useNavigate();
-  const [tasks, setTasks] = useState(mockTasks);
+
+  const [namePrefix, setNamePrefix] = useState("");
+  const [state, setState] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [page, setPage] = useState(1);
+
   const {
     closeModal,
     openModal,
     successModal,
   } = useModal();
+
+  const {
+    data: account,
+    logout,
+  } = useAuth();
+
+  const {
+    data: accounts = [],
+  } = useAccounts();
+
+  const {
+    data: taskStates = [],
+  } = useTaskStates();
+
+  const {
+    mutateAsync: updateTaskState,
+    isPending: isUpdatingState,
+  } = useUpdateTaskState();
+
+  const {
+    mutateAsync: assignTask,
+    isPending: isAssigningTask,
+  } = useAssignTask();
+
   const { showToast } = useToast();
+
+  const {
+    data: tasksResponse,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useTasks({
+    name_prefix:
+      namePrefix.trim() !== ""
+        ? namePrefix
+        : undefined,
+
+    state:
+      state !== ""
+        ? state
+        : undefined,
+
+    due_date:
+      dueDate !== ""
+        ? dueDate
+        : undefined,
+
+    page,
+    page_size: PAGE_SIZE,
+  });
+
+  const tasks = tasksResponse?.data ?? [];
+  const meta = tasksResponse?.meta;
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(
+      (meta?.total ?? 0) /
+        (meta?.page_size ?? PAGE_SIZE),
+    ),
+  );
+
+  async function handleStateChange(
+    taskId: number,
+    state: string,
+  ) {
+    if (account === null) {
+      return;
+    }
+
+    try {
+      await updateTaskState({
+        taskId,
+        state,
+        updated_by_id: account.account_id,
+      });
+
+      showToast({
+        title: "State updated",
+        message: "The task state was updated successfully.",
+        type: "success",
+        duration: 3000,
+      });
+    } catch (error) {
+      showToast({
+        title: "Unable to update state",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to update task state.",
+        type: "error",
+        duration: 5000,
+      });
+    }
+  }
+
+
+  async function handleAssignChange(
+    taskId: number,
+    assignedToId: number,
+  ) {
+    if (account === null) {
+      return;
+    }
+
+    try {
+      await assignTask({
+        taskId,
+        assigned_to_id: assignedToId,
+        updated_by_id: account.account_id,
+      });
+
+      showToast({
+        title: "Task assigned",
+        message: "The task was assigned successfully.",
+        type: "success",
+        duration: 3000,
+      });
+    } catch (error) {
+      showToast({
+        title: "Unable to assign task",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to assign the task.",
+        type: "error",
+        duration: 5000,
+      });
+    }
+  }
 
   function handleOpenNewTask() {
     openModal({
       width: "520px",
       height: "auto",
+
       content: (
         <NewTaskModal
           onClose={closeModal}
-          onCreate={(values) => {
-            const now = new Date().toISOString();
-
-            setTasks((currentTasks) => {
-              const nextTaskId =
-                currentTasks.reduce(
-                  (currentMaxId, task) =>
-                    Math.max(currentMaxId, task.id),
-                  0,
-                ) + 1;
-
-              return [
-                ...currentTasks,
-                {
-                  id: nextTaskId,
-                  name: values.name,
-                  description: values.description,
-                  state: "OPEN",
-                  assigned_to: null,
-                  created_by: "Rodrigo Diaz de Vivar",
-                  updated_by: "Rodrigo Diaz de Vivar",
-                  created_at: now,
-                  updated_at: now,
-                  due_date: `${values.due_date}T00:00:00Z`,
-                },
-              ];
-            });
-
+          onCreate={() => {
             successModal();
           }}
         />
       ),
+
       onSuccess: () => {
+        void refetch();
+
         showToast({
           title: "Task created",
-          message: "The task was created successfully.",
+          message:
+            "The task was created successfully.",
           type: "success",
         });
       },
     });
   }
 
-  function handleOpenTaskDetail(task: Task) {
+
+  function handleOpenTaskDetail(
+    task: (typeof tasks)[number],
+  ) {
     openModal({
       width: "520px",
       height: "auto",
+
       content: (
         <TaskDetailModal
           task={task}
           onClose={closeModal}
-          onUpdate={(values) => {
-            setTasks((currentTasks) =>
-              currentTasks.map((currentTask) =>
-                currentTask.id === values.id
-                  ? {
-                      ...currentTask,
-                      name: values.name,
-                      description: values.description,
-                      updated_at: new Date().toISOString(),
-                    }
-                  : currentTask,
-              ),
-            );
+          onUpdate={() => {
             successModal();
           }}
         />
       ),
+
       onSuccess: () => {
+        void refetch();
+
         showToast({
           title: "Task updated",
           message: `Task #${task.id} was updated.`,
@@ -179,7 +247,10 @@ function TaskDashboard() {
     });
   }
 
+
   function handleLogout() {
+    logout();
+
     navigate(appRoutes.login, {
       replace: true,
     });
@@ -208,11 +279,12 @@ function TaskDashboard() {
 
         <div className="task-dashboard__user">
           <div className="task-dashboard__avatar">
-            RD
+            {account?.name?.charAt(0) ?? ""}
+            {account?.last_name?.charAt(0) ?? ""}
           </div>
 
           <span className="task-dashboard__username">
-            Rodrigo Diaz de Vivar
+            {account?.name} {account?.last_name}
           </span>
 
           <button
@@ -241,6 +313,11 @@ function TaskDashboard() {
               className="input"
               type="text"
               placeholder="Search tasks..."
+              value={namePrefix}
+              onChange={(event) => {
+                setNamePrefix(event.target.value);
+                setPage(1);
+              }}
             />
           </div>
 
@@ -255,11 +332,17 @@ function TaskDashboard() {
             <select
               id="task-state"
               className="input"
-              defaultValue=""
+              value={state}
+              onChange={(event) => {
+                setState(event.target.value);
+                setPage(1);
+              }}
             >
               <option value="">All</option>
               <option value="OPEN">Open</option>
-              <option value="PROGRESS">Progress</option>
+              <option value="PROGRESS">
+                Progress
+              </option>
               <option value="REVIEW">Review</option>
               <option value="DONE">Done</option>
             </select>
@@ -277,6 +360,11 @@ function TaskDashboard() {
               id="due-date"
               className="input"
               type="date"
+              value={dueDate}
+              onChange={(event) => {
+                setDueDate(event.target.value);
+                setPage(1);
+              }}
             />
           </div>
         </section>
@@ -297,72 +385,177 @@ function TaskDashboard() {
             </thead>
 
             <tbody>
-              {tasks.map((task) => (
-                <tr key={task.id}>
-                  <td>
-                    <button
-                      type="button"
-                      className="task-table__delete"
-                      aria-label={`Delete ${task.name}`}
-                    >
-                      <TrashIcon />
-                    </button>
-                  </td>
-
-                  <td>
-                    <button
-                      type="button"
-                      className="task-table__name-button"
-                      onClick={() => {
-                        handleOpenTaskDetail(task);
-                      }}
-                    >
-                      {task.name}
-                    </button>
-                  </td>
-
-                  <td>{task.description}</td>
-
-                  <td>
-                    <span className="task-state">
-                      {task.state}
-                    </span>
-                  </td>
-
-                  <td>
-                    {task.assigned_to ?? "Unassigned"}
-                  </td>
-
-                  <td>{task.created_by}</td>
-
-                  <td>
-                    {new Date(task.created_at).toLocaleDateString()}
-                  </td>
-
-                  <td>
-                    {new Date(task.due_date).toLocaleDateString()}
+              {isLoading && (
+                <tr>
+                  <td colSpan={8}>
+                    Loading tasks...
                   </td>
                 </tr>
-              ))}
+              )}
+
+              {isError && (
+                <tr>
+                  <td colSpan={8}>
+                    Unable to load tasks.
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading &&
+                !isError &&
+                tasks.length === 0 && (
+                  <tr>
+                    <td colSpan={8}>
+                      No tasks found.
+                    </td>
+                  </tr>
+                )}
+
+              {!isLoading &&
+                !isError &&
+                tasks.map((task) => (
+                  <tr key={task.id}>
+                    <td>
+                      <button
+                        type="button"
+                        className="task-table__delete"
+                        aria-label={`Delete ${task.name}`}
+                      >
+                        <TrashIcon />
+                      </button>
+                    </td>
+
+                    <td>
+                      <button
+                        type="button"
+                        className="task-table__name-button"
+                        onClick={() => {
+                          handleOpenTaskDetail(task);
+                        }}
+                      >
+                        {task.name}
+                      </button>
+                    </td>
+
+                    <td>
+                      {task.description}
+                    </td>
+
+                    <td>
+                      <select
+                        className="task-table__select"
+                        value={task.state}
+                        disabled={isUpdatingState}
+                        onChange={(event) => {
+                          void handleStateChange(
+                            task.id,
+                            event.target.value,
+                          );
+                        }}
+                      >
+                        {taskStates.map((taskState) => (
+                          <option
+                            key={taskState.id}
+                            value={taskState.name}
+                          >
+                            {taskState.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+
+                    <td className="task-table__user-column">
+                      <select
+                        className="task-table__select"
+                        value={task.assigned_to?.id ?? ""}
+                        disabled={isAssigningTask}
+                        onChange={(event) => {
+                          const assignedToId = Number(event.target.value);
+
+                          if (!assignedToId) {
+                            return;
+                          }
+
+                          void handleAssignChange(task.id, assignedToId);
+                        }}
+                      >
+                        <option value="" disabled>
+                          Unassigned
+                        </option>
+
+                        {accounts.map((item) => (
+                          <option
+                            key={item.account_id}
+                            value={item.account_id}
+                          >
+                            {item.name} {item.last_name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+
+                    <td className="task-table__user-column">
+                      {task.created_by.name}
+                    </td>
+
+                    <td>
+                      {new Date(
+                        task.created_at,
+                      ).toLocaleDateString()}
+                    </td>
+
+                    <td>
+                      {new Date(
+                        task.due_date,
+                      ).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </section>
-
+        <div className="task-dashboard__refresh-status">
+          {isFetching
+            ? "Refreshing..."
+            : "Updated"}
+        </div>        
         <footer className="task-pagination">
           <button
             type="button"
             className="button button--subtle"
+            disabled={
+              isLoading ||
+              page <= 1
+            }
+            onClick={() => {
+              setPage((current) =>
+                Math.max(1, current - 1),
+              );
+            }}
           >
             Previous
           </button>
 
           <span className="task-pagination__page">
-            Page 1
+            Page {meta?.page ?? page} of{" "}
+            {totalPages}
           </span>
 
           <button
             type="button"
             className="button button--subtle"
+            disabled={
+              isLoading ||
+              page >= totalPages
+            }
+            onClick={() => {
+              setPage((current) =>
+                Math.min(
+                  totalPages,
+                  current + 1,
+                ),
+              );
+            }}
           >
             Next
           </button>
@@ -371,5 +564,6 @@ function TaskDashboard() {
     </main>
   );
 }
+
 
 export default TaskDashboard;

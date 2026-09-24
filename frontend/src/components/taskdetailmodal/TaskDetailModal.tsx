@@ -4,6 +4,7 @@ import {
 } from "react";
 
 import "./TaskDetailModal.css";
+import type { TaskItem } from "../../app.types";
 
 export type TaskDetailModalTask = {
   id: number;
@@ -25,7 +26,7 @@ export type TaskDetailModalValues = {
 };
 
 type TaskDetailModalProps = {
-  task: TaskDetailModalTask;
+  task: TaskItem;
   onClose: () => void;
   onUpdate: (values: TaskDetailModalValues) => void;
 };
@@ -117,12 +118,12 @@ function TaskDetailModal({
         <dl className="task-detail-modal__metadata">
           <div className="task-detail-modal__metadata-item">
             <dt>Created by</dt>
-            <dd>{task.created_by}</dd>
+            <dd>{task.created_by.name}</dd>
           </div>
 
           <div className="task-detail-modal__metadata-item">
             <dt>Updated by</dt>
-            <dd>{task.updated_by}</dd>
+            <dd>{task.updated_by?.name ?? "N/A"}</dd>
           </div>
 
           <div className="task-detail-modal__metadata-item">

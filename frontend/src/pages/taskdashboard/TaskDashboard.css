@@ -1,21 +1,22 @@
 .task-dashboard {
-  min-height: 100vh;
   width: 100%;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
 
   background: var(--color-background);
 }
 
-.task-dashboard__shell {
-  width: 100%;
-  min-height: 100vh;
-
-  background: var(--color-surface);
-}
-
-/* Header */
+/* =========================================================
+   Header
+   ========================================================= */
 
 .task-dashboard__header {
   min-height: 72px;
+  flex: 0 0 72px;
 
   display: flex;
   align-items: center;
@@ -24,6 +25,8 @@
   padding: 12px 20px;
 
   border-bottom: 1px solid #d4d4d8;
+
+  background: var(--color-surface);
 }
 
 .task-dashboard__header-left {
@@ -43,6 +46,7 @@
   border: 1px solid #d4d4d8;
   border-radius: 50%;
 
+  color: var(--color-text);
   background: var(--color-background);
 
   font-weight: 700;
@@ -121,21 +125,34 @@
   stroke-linejoin: round;
 }
 
-/* Content */
+/* =========================================================
+   Content
+   ========================================================= */
 
 .task-dashboard__content {
-  padding: 32px;
+  min-height: 0;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 24px 32px;
+
+  overflow: hidden;
 }
 
-/* Filters */
+/* =========================================================
+   Filters
+   ========================================================= */
 
 .task-filters {
+  flex: 0 0 auto;
+
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
   gap: 16px;
 
-  margin-bottom: 24px;
-
+  margin-bottom: 20px;
   padding: 18px;
 
   border: 1px solid #d4d4d8;
@@ -144,12 +161,17 @@
   background: var(--color-background);
 }
 
-/* Table */
+/* =========================================================
+   Table
+   ========================================================= */
 
 .task-table-wrapper {
+  min-height: 0;
+  flex: 1;
+
   width: 100%;
 
-  overflow-x: auto;
+  overflow: auto;
 
   border: 1px solid #d4d4d8;
   border-radius: 12px;
@@ -159,25 +181,34 @@
 
 .task-table {
   width: 100%;
+  min-width: 1000px;
 
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 
   font-size: 14px;
+}
+
+.task-table thead {
+  position: sticky;
+  top: 0;
+
+  z-index: 2;
 }
 
 .task-table th {
   padding: 12px;
 
+  border-bottom: 1px solid #d4d4d8;
+
   color: var(--color-muted);
+  background: var(--color-background);
 
   font-size: 12px;
   font-weight: 600;
-
   text-align: left;
 
-  border-bottom: 1px solid #d4d4d8;
-
-  background: var(--color-background);
+  white-space: nowrap;
 }
 
 .task-table td {
@@ -198,6 +229,10 @@
   background: #fafafa;
 }
 
+/* =========================================================
+   Task name
+   ========================================================= */
+
 .task-table__name-button {
   max-width: 240px;
 
@@ -214,6 +249,7 @@
 
   font-weight: 600;
   text-align: left;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 
@@ -229,6 +265,10 @@
   outline: 2px solid var(--color-text);
   outline-offset: 2px;
 }
+
+/* =========================================================
+   Delete
+   ========================================================= */
 
 .task-table__delete {
   width: 28px;
@@ -263,32 +303,30 @@
   stroke-linejoin: round;
 }
 
-/* State */
-
-.task-state {
-  display: inline-flex;
-
-  padding: 3px 8px;
-
-  border: 1px solid #d4d4d8;
-  border-radius: 999px;
-
-  color: var(--color-text);
-  background: var(--color-background);
-
-  font-size: 12px;
-  font-weight: 600;
+.task-table__user-column {
+  width: 250px;
+  max-width: 250px;
+  overflow: hidden;
 }
 
-/* Pagination */
+.task-table__user-column .task-table__select {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* =========================================================
+   Pagination
+   ========================================================= */
 
 .task-pagination {
+  flex: 0 0 auto;
+
   display: flex;
-  justify-content: flex-end;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
 
-  margin-top: 16px;
+  padding-top: 16px;
 }
 
 .task-pagination__page {
@@ -297,16 +335,24 @@
   font-size: 13px;
 }
 
-/* Responsive */
+.task-dashboard__refresh-status {
+  min-height: 20px;
+
+  padding-top: 8px;
+
+  color: var(--color-muted);
+
+  font-size: 12px;
+  text-align: right;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
 
 @media (max-width: 760px) {
-  .task-dashboard {
-    padding: 16px;
-  }
-
   .task-dashboard__header {
-    align-items: flex-start;
-    gap: 16px;
+    padding: 12px 16px;
   }
 
   .task-dashboard__username {
@@ -314,10 +360,19 @@
   }
 
   .task-dashboard__content {
-    padding: 20px;
+    padding: 16px;
   }
 
   .task-filters {
     grid-template-columns: 1fr;
+
+    gap: 12px;
+
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+
+  .task-pagination {
+    justify-content: center;
   }
 }
