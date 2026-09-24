@@ -1,34 +1,33 @@
-import {
-  type FormEvent,
-  useState,
-} from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import "./TaskDetailModal.css";
+
 import type { TaskItem } from "../../app.types";
+import { useUpdateTask } from "../../hooks/use-update-task";
+import { useToast } from "../toast/useToast";
 
-export type TaskDetailModalTask = {
-  id: number;
-  name: string;
-  description: string;
-  state: string;
-  assigned_to: string | null;
-  created_by: string;
-  updated_by: string;
-  created_at: string;
-  updated_at: string;
-  due_date: string;
-};
+const taskSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required")
+    .max(150, "Name is too long"),
 
-export type TaskDetailModalValues = {
-  id: number;
-  name: string;
-  description: string;
-};
+  description: z
+    .string()
+    .trim()
+    .min(1, "Description is required"),
+});
+
+type TaskFormValues = z.infer<typeof taskSchema>;
 
 type TaskDetailModalProps = {
   task: TaskItem;
+  updatedById: number;
+  onUpdate: () => void;
   onClose: () => void;
-  onUpdate: (values: TaskDetailModalValues) => void;
 };
 
 function formatDate(value: string) {
@@ -37,30 +36,61 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatDueDateForApi(value: string) {
+  return value.slice(0, 10);
+}
+
 function TaskDetailModal({
   task,
-  onClose,
+  updatedById,
   onUpdate,
+  onClose,
 }: TaskDetailModalProps) {
-  const [name, setName] = useState(task.name);
-  const [description, setDescription] = useState(
-    task.description,
-  );
+  const {
+    mutateAsync: updateTask,
+    isPending: isUpdatingTask,
+  } = useUpdateTask();
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<TaskFormValues>({
+    resolver: zodResolver(taskSchema),
+    defaultValues: {
+      name: task.name,
+      description: task.description,
+    },
+  });
 
-    onUpdate({
-      id: task.id,
-      name,
-      description,
-    });
-  }
+  const { showToast } = useToast();
+
+  const onSubmit = async (values: TaskFormValues) => {
+    try {
+      await updateTask({
+        taskId: task.id,
+        name: values.name,
+        description: values.description,
+        due_date: formatDueDateForApi(task.due_date),
+        updated_by_id: updatedById,
+      });
+
+      onUpdate();
+    } catch (error) {
+      console.error("Error updating task:", error);
+      showToast({
+        title: "Update failed",
+        message: "There was an error updating the task.",
+        type: "error",
+        duration: 3000,
+      });
+    }
+  };
 
   return (
     <form
       className="task-detail-modal"
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
     >
       <header className="task-detail-modal__header">
         <h2 className="task-detail-modal__title">
@@ -90,11 +120,14 @@ function TaskDetailModal({
             id={`task-detail-name-${task.id}`}
             className="input"
             type="text"
-            value={name}
-            onChange={(event) => {
-              setName(event.target.value);
-            }}
+            {...register("name")}
           />
+
+          {errors.name && (
+            <span className="field__error">
+              {errors.name.message}
+            </span>
+          )}
         </div>
 
         <div className="field">
@@ -108,11 +141,14 @@ function TaskDetailModal({
           <textarea
             id={`task-detail-description-${task.id}`}
             className="textarea task-detail-modal__description"
-            value={description}
-            onChange={(event) => {
-              setDescription(event.target.value);
-            }}
+            {...register("description")}
           />
+
+          {errors.description && (
+            <span className="field__error">
+              {errors.description.message}
+            </span>
+          )}
         </div>
 
         <dl className="task-detail-modal__metadata">
@@ -152,8 +188,9 @@ function TaskDetailModal({
         <button
           type="submit"
           className="button button--primary"
+          disabled={isUpdatingTask}
         >
-          Update
+          {isUpdatingTask ? "Updating..." : "Update"}
         </button>
       </footer>
     </form>

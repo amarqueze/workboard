@@ -7,6 +7,8 @@ import type {
   ListTasksResult, 
   UpdateTaskStateRequest,
   AssignTaskRequest,
+  DeleteTaskRequest,
+  UpdateTaskRequest,
 } from "../app.types";
 import { httpClient } from "./http-client";
 
@@ -81,5 +83,37 @@ export async function assignTask(
       assigned_to_id,
       updated_by_id,
     },
+  );
+}
+
+export async function updateTask(
+  request: UpdateTaskRequest,
+): Promise<void> {
+  const {
+    taskId,
+    name,
+    description,
+    due_date,
+    updated_by_id,
+  } = request;
+
+  await httpClient.put(
+    `/tasks/${taskId}/`,
+    {
+      name,
+      description,
+      due_date,
+      updated_by_id,
+    },
+  );
+}
+
+export async function deleteTask(
+  request: DeleteTaskRequest,
+): Promise<void> {
+  const { taskId } = request;
+
+  await httpClient.delete(
+    `/tasks/${taskId}/`,
   );
 }

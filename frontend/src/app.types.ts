@@ -143,6 +143,18 @@ export type AssignTaskRequest = {
   updated_by_id: number;
 };
 
+export type UpdateTaskRequest = {
+  taskId: number;
+  name: string;
+  description: string;
+  due_date: string;
+  updated_by_id: number;
+};
+
+export type DeleteTaskRequest = {
+  taskId: number;
+};
+
 export type ApiErrorResponse = {
   error?: {
     code?: string;

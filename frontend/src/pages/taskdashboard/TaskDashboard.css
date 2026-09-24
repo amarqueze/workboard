@@ -309,6 +309,12 @@
   overflow: hidden;
 }
 
+.task-table__name-column {
+  max-width: 500px;
+  max-height: 30px;
+  overflow: hidden;
+}
+
 .task-table__user-column .task-table__select {
   width: 100%;
   max-width: 100%;

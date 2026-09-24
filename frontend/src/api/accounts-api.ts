@@ -4,7 +4,8 @@ import type {
   GetAccountInfoResponse, 
   ListAccountsResponse, 
   RegisterAccountApiResponse, 
-  RegisterAccountRequest } from "../app.types";
+  RegisterAccountRequest
+} from "../app.types";
 import { httpClient } from "./http-client";
 
 export async function loginAccount(

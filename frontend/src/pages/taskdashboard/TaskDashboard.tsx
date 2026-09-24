@@ -18,6 +18,7 @@ import { useTaskStates } from "../../hooks/use-task-states";
 import { useUpdateTaskState } from "../../hooks/use-update-task-state";
 
 import "./TaskDashboard.css";
+import { useDeleteTask } from "../../hooks/use-delete-task";
 
 const PAGE_SIZE = 10;
 
@@ -78,6 +79,11 @@ function TaskDashboard() {
   } = useUpdateTaskState();
 
   const {
+    mutateAsync: deleteTaskMutation,
+    isPending: isDeletingTask,
+  } = useDeleteTask();
+
+  const {
     mutateAsync: assignTask,
     isPending: isAssigningTask,
   } = useAssignTask();
@@ -121,6 +127,16 @@ function TaskDashboard() {
     ),
   );
 
+  const handleDeleteTask = async (taskId: number) => {
+    try {
+      await deleteTaskMutation({
+        taskId,
+      });
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };
+
   async function handleStateChange(
     taskId: number,
     state: string,
@@ -154,7 +170,6 @@ function TaskDashboard() {
       });
     }
   }
-
 
   async function handleAssignChange(
     taskId: number,
@@ -229,6 +244,7 @@ function TaskDashboard() {
         <TaskDetailModal
           task={task}
           onClose={closeModal}
+          updatedById={account!.account_id}
           onUpdate={() => {
             successModal();
           }}
@@ -375,7 +391,6 @@ function TaskDashboard() {
               <tr>
                 <th aria-label="Actions" />
                 <th>Name</th>
-                <th>Description</th>
                 <th>State</th>
                 <th>Assigned to</th>
                 <th>Created by</th>
@@ -385,7 +400,7 @@ function TaskDashboard() {
             </thead>
 
             <tbody>
-              {isLoading && (
+              {isLoading && isDeletingTask && (
                 <tr>
                   <td colSpan={8}>
                     Loading tasks...
@@ -412,6 +427,7 @@ function TaskDashboard() {
                 )}
 
               {!isLoading &&
+                !isDeletingTask &&
                 !isError &&
                 tasks.map((task) => (
                   <tr key={task.id}>
@@ -420,12 +436,13 @@ function TaskDashboard() {
                         type="button"
                         className="task-table__delete"
                         aria-label={`Delete ${task.name}`}
+                        onClick={() => void handleDeleteTask(task.id)}
                       >
                         <TrashIcon />
                       </button>
                     </td>
 
-                    <td>
+                    <td className="task-table__name-column">
                       <button
                         type="button"
                         className="task-table__name-button"
@@ -435,10 +452,6 @@ function TaskDashboard() {
                       >
                         {task.name}
                       </button>
-                    </td>
-
-                    <td>
-                      {task.description}
                     </td>
 
                     <td>
