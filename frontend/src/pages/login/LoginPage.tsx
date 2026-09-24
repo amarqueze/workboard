@@ -1,3 +1,7 @@
+import type { FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { appRoutes } from "../../routes/appRoutes";
 import "./LoginPage.css";
 
 function MailIcon() {
@@ -56,6 +60,13 @@ function LockIcon() {
 }
 
 function LoginPage() {
+  const navigate = useNavigate();
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    navigate(appRoutes.home);
+  }
+
   return (
     <main className="login-page">
       <section className="login-shell">
@@ -71,7 +82,10 @@ function LoginPage() {
           </p>
         </header>
 
-        <form className="login-card">
+        <form
+          className="login-card"
+          onSubmit={handleSubmit}
+        >
           <div className="login-card__header">
             <h2>Sign in</h2>
             <p>Welcome back</p>

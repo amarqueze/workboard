@@ -1,9 +1,9 @@
 import './App.css'
 
-import TaskDashboard from './pages/taskdashboard/TaskDashboard';
+import { AppRouter } from './routes/AppRouter';
 
 function App() {
-  return <TaskDashboard />;
+  return <AppRouter />;
 }
 
 export default App;

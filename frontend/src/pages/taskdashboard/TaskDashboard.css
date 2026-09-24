@@ -48,6 +48,16 @@
   font-weight: 700;
 }
 
+.task-dashboard__logo:hover {
+  border-color: #a1a1aa;
+  background: #eeeeec;
+}
+
+.task-dashboard__logo:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
+}
+
 .task-dashboard__user {
   display: flex;
   align-items: center;
@@ -188,8 +198,36 @@
   background: #fafafa;
 }
 
-.task-table__name {
+.task-table__name-button {
+  max-width: 240px;
+
+  display: inline-block;
+
+  overflow: hidden;
+
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-text);
+  background: transparent;
+
   font-weight: 600;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.task-table__name-button:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.task-table__name-button:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
 }
 
 .task-table__delete {

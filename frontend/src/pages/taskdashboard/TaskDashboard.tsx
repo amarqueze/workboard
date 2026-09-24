@@ -1,7 +1,16 @@
+import { useState } from "react";
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
+
+import { useModal } from "../../components/modal/useModal";
+import NewTaskModal from "../../components/newtaskmodal/NewTaskModal";
+import TaskDetailModal from "../../components/taskdetailmodal/TaskDetailModal";
 import { useToast } from "../../components/toast/useToast";
+import { appRoutes } from "../../routes/appRoutes";
 import "./TaskDashboard.css";
 
-  
 type Task = {
   id: number;
   name: string;
@@ -9,7 +18,9 @@ type Task = {
   state: string;
   assigned_to: string | null;
   created_by: string;
+  updated_by: string;
   created_at: string;
+  updated_at: string;
   due_date: string;
 };
 
@@ -19,9 +30,11 @@ const mockTasks: Task[] = [
     name: "Review quarterly report",
     description: "Review financial results and disclosure notes.",
     state: "OPEN",
-    assigned_to: "Rodrigo Díaz",
-    created_by: "Rodrigo Díaz de Vivar",
+    assigned_to: "Rodrigo Diaz",
+    created_by: "Rodrigo Diaz de Vivar",
+    updated_by: "Rodrigo Diaz de Vivar",
     created_at: "2026-09-20T14:30:00Z",
+    updated_at: "2026-09-21T16:20:00Z",
     due_date: "2026-10-10T00:00:00Z",
   },
   {
@@ -30,8 +43,10 @@ const mockTasks: Task[] = [
     description: "Prepare revenue disclosure information.",
     state: "PROGRESS",
     assigned_to: null,
-    created_by: "Rodrigo Díaz de Vivar",
+    created_by: "Rodrigo Diaz de Vivar",
+    updated_by: "Alfonso VI",
     created_at: "2026-09-21T09:15:00Z",
+    updated_at: "2026-09-22T10:40:00Z",
     due_date: "2026-10-15T00:00:00Z",
   },
   {
@@ -40,8 +55,10 @@ const mockTasks: Task[] = [
     description: "Validate cash flow disclosure balances.",
     state: "REVIEW",
     assigned_to: "Alfonso VI",
-    created_by: "Rodrigo Díaz de Vivar",
+    created_by: "Rodrigo Diaz de Vivar",
+    updated_by: "Alfonso VI",
     created_at: "2026-09-22T11:45:00Z",
+    updated_at: "2026-09-23T08:10:00Z",
     due_date: "2026-10-20T00:00:00Z",
   },
 ];
@@ -69,12 +86,102 @@ function LogoutIcon() {
 }
 
 function TaskDashboard() {
+  const navigate = useNavigate();
+  const [tasks, setTasks] = useState(mockTasks);
+  const {
+    closeModal,
+    openModal,
+    successModal,
+  } = useModal();
   const { showToast } = useToast();
-  function handleToast() {
-    showToast({
-      title: "Welcome back",
-      message: "You have signed in successfully.",
-      type: "success",
+
+  function handleOpenNewTask() {
+    openModal({
+      width: "520px",
+      height: "auto",
+      content: (
+        <NewTaskModal
+          onClose={closeModal}
+          onCreate={(values) => {
+            const now = new Date().toISOString();
+
+            setTasks((currentTasks) => {
+              const nextTaskId =
+                currentTasks.reduce(
+                  (currentMaxId, task) =>
+                    Math.max(currentMaxId, task.id),
+                  0,
+                ) + 1;
+
+              return [
+                ...currentTasks,
+                {
+                  id: nextTaskId,
+                  name: values.name,
+                  description: values.description,
+                  state: "OPEN",
+                  assigned_to: null,
+                  created_by: "Rodrigo Diaz de Vivar",
+                  updated_by: "Rodrigo Diaz de Vivar",
+                  created_at: now,
+                  updated_at: now,
+                  due_date: `${values.due_date}T00:00:00Z`,
+                },
+              ];
+            });
+
+            successModal();
+          }}
+        />
+      ),
+      onSuccess: () => {
+        showToast({
+          title: "Task created",
+          message: "The task was created successfully.",
+          type: "success",
+        });
+      },
+    });
+  }
+
+  function handleOpenTaskDetail(task: Task) {
+    openModal({
+      width: "520px",
+      height: "auto",
+      content: (
+        <TaskDetailModal
+          task={task}
+          onClose={closeModal}
+          onUpdate={(values) => {
+            setTasks((currentTasks) =>
+              currentTasks.map((currentTask) =>
+                currentTask.id === values.id
+                  ? {
+                      ...currentTask,
+                      name: values.name,
+                      description: values.description,
+                      updated_at: new Date().toISOString(),
+                    }
+                  : currentTask,
+              ),
+            );
+            successModal();
+          }}
+        />
+      ),
+      onSuccess: () => {
+        showToast({
+          title: "Task updated",
+          message: `Task #${task.id} was updated.`,
+          type: "success",
+        });
+      },
+    });
+  }
+
+  function handleLogout() {
+    navigate(appRoutes.login, {
+      replace: true,
     });
   }
 
@@ -82,12 +189,18 @@ function TaskDashboard() {
     <main className="task-dashboard">
       <header className="task-dashboard__header">
         <div className="task-dashboard__header-left">
-          <div className="task-dashboard__logo">WB</div>
+          <Link
+            className="task-dashboard__logo"
+            to={appRoutes.home}
+            aria-label="Back to home"
+          >
+            WB
+          </Link>
 
           <button
             type="button"
             className="button button--primary"
-            onClick={handleToast}
+            onClick={handleOpenNewTask}
           >
             + New Task
           </button>
@@ -99,13 +212,14 @@ function TaskDashboard() {
           </div>
 
           <span className="task-dashboard__username">
-            Rodrigo Díaz de Vivar
+            Rodrigo Diaz de Vivar
           </span>
 
           <button
             type="button"
             className="task-dashboard__logout"
             aria-label="Sign out"
+            onClick={handleLogout}
           >
             <LogoutIcon />
           </button>
@@ -183,7 +297,7 @@ function TaskDashboard() {
             </thead>
 
             <tbody>
-              {mockTasks.map((task) => (
+              {tasks.map((task) => (
                 <tr key={task.id}>
                   <td>
                     <button
@@ -195,8 +309,16 @@ function TaskDashboard() {
                     </button>
                   </td>
 
-                  <td className="task-table__name">
-                    {task.name}
+                  <td>
+                    <button
+                      type="button"
+                      className="task-table__name-button"
+                      onClick={() => {
+                        handleOpenTaskDetail(task);
+                      }}
+                    >
+                      {task.name}
+                    </button>
                   </td>
 
                   <td>{task.description}</td>
