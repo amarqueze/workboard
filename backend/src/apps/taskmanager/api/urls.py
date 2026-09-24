@@ -1,11 +1,17 @@
+from webbrowser import get
+
 from django.urls import path
 
 from apps.taskmanager.api.views import TaskViewSet
 
 task_list = TaskViewSet.as_view(
     {
-        "get": "list",
         "post": "create",
+    }
+)
+task_filter = TaskViewSet.as_view(
+    {
+        "post": "filter_tasks",
     }
 )
 task_detail = TaskViewSet.as_view(
@@ -16,12 +22,12 @@ task_detail = TaskViewSet.as_view(
 )
 task_assign = TaskViewSet.as_view(
     {
-        "post": "assign",
+        "patch": "assign",
     }
 )
 task_change_state = TaskViewSet.as_view(
     {
-        "post": "change_state",
+        "patch": "change_state",
     }
 )
 task_states = TaskViewSet.as_view(
@@ -40,6 +46,11 @@ urlpatterns = [
         "tasks/states/",
         task_states,
         name="tasks-states",
+    ),
+    path(
+        "tasks/filter/",
+        task_filter,
+        name="tasks-filter",
     ),
     path(
         "tasks/<int:id>/",

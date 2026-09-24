@@ -1,7 +1,7 @@
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.viewsets import ViewSet
+from rest_framework.viewsets import GenericViewSet
 
 from apps.accounts.infrastructure.repositories import DjangoAccountRepository
 from apps.taskmanager.application.dto import (
@@ -40,18 +40,20 @@ from .serializers import (
 )
 
 
-class TaskViewSet(ViewSet):
+class TaskViewSet(GenericViewSet):
+    serializer_class = TaskResponseSerializer
+
     @extend_schema(
         tags=["Tasks"],
         summary="List tasks",
-        parameters=[TaskFilterRequestSerializer],
+        request=TaskFilterRequestSerializer,
         responses={
             200: TaskPageResponseSerializer,
         },
     )
-    def list(self, request):
+    def filter_tasks(self, request):
         request_serializer = TaskFilterRequestSerializer(
-            data=request.query_params,
+            data=request.data,
         )
         request_serializer.is_valid(raise_exception=True)
 

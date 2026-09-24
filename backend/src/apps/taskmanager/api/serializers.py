@@ -65,10 +65,27 @@ class TaskResponseSerializer(serializers.Serializer):
     due_date = serializers.DateTimeField()
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField()
-    created_by_id = serializers.IntegerField()
-    updated_by_id = serializers.IntegerField()
-    assigned_to_id = serializers.IntegerField(allow_null=True)
+
+    created_by = serializers.SerializerMethodField()
+    updated_by = serializers.SerializerMethodField()
+    assigned_to = serializers.SerializerMethodField()
+
     state = serializers.CharField(source="state.name")
+
+    def get_created_by(self, obj):
+        return f"{obj.created_by.name} {obj.created_by.last_name}"
+
+    def get_updated_by(self, obj):
+        if obj.updated_by is None:
+            return None
+
+        return f"{obj.updated_by.name} {obj.updated_by.last_name}"
+
+    def get_assigned_to(self, obj):
+        if obj.assigned_to is None:
+            return None
+
+        return f"{obj.assigned_to.name} {obj.assigned_to.last_name}"
 
 
 class TaskResponseEnvelopeSerializer(serializers.Serializer):
