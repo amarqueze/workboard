@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     
     "rest_framework",
     "drf_spectacular",
+    "django_tasks_db",
     
     "apps.accounts.apps.AccountsConfig",
     "apps.taskmanager.apps.TaskmanagerConfig",
@@ -162,6 +163,13 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=24),
+}
+
+TASKS = {
+    "default": {
+        "BACKEND": "django_tasks_db.DatabaseBackend",
+        "QUEUES": ["default"],
+    }
 }
 
 AUTH_USER_MODEL = "accounts.Account"
